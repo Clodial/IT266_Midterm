@@ -239,6 +239,9 @@ typedef struct gitem_s
 	int			tag;
 
 	char		*precaches;		// string of all models, sounds, and images this item will use
+
+	int			wpn_sabo;		//for a tutorial I'm currently trying out
+
 } gitem_t;
 
 
@@ -583,6 +586,9 @@ extern	gitem_t	itemlist[];
 //
 void Cmd_Help_f (edict_t *ent);
 void Cmd_Score_f (edict_t *ent);
+
+void fire_magic1 (edict_t *ent);
+
 
 //
 // g_items.c
