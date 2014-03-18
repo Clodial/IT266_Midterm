@@ -14,46 +14,6 @@ static void P_ProjectSource (gclient_t *client, vec3_t point, vec3_t distance, v
 		_distance[1] = 0;
 	G_ProjectSource (point, _distance, forward, right, result);
 }
-void Magic_Blast (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, int effect)
-{
-	vec3_t  dir;
-	vec3_t	forward, right;
-	vec3_t	start;
-	vec3_t	offset;
-
-	
-	AngleVectors (ent->client->v_angle, forward, right, NULL);
-	VectorSet(offset, 24, 8, ent->viewheight-8);
-	VectorAdd (offset, g_offset, offset);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
-
-	VectorScale (forward, -2, ent->client->kick_origin);
-	ent->client->kick_angles[0] = -1;
-
-	VectorScale (forward,1000,dir);
-	VectorCopy (dir, ent->velocity);
-	
-
-	// send muzzle flash
-	gi.WriteByte (svc_muzzleflash);
-	gi.WriteShort (ent-g_edicts);
-	
-	gi.multicast (ent->s.origin, MULTICAST_PVS);
-
-	PlayerNoise(ent, start, PNOISE_WEAPON);
-}
-void Magic_Fire (edict_t *ent)
-{
-	int		damage;
-
-	if (deathmatch->value)
-		damage = 15;
-	else
-		damage = 10;
-	Magic_Blast (ent, vec3_origin, damage, false, EF_BLASTER);
-	ent->client->ps.gunframe++;
-	gi.cprintf (ent, PRINT_HIGH, "So, you shot stuff?\n");
-}
 //
 //End of section I'm adding
 //
@@ -944,6 +904,10 @@ ClientCommand
 */
 void ClientCommand (edict_t *ent)
 {
+	vec3_t  dir;
+	vec3_t	forward, right;
+	vec3_t	start;
+	vec3_t	offset;
 	char	*cmd;
 
 	if (!ent->client)
@@ -984,8 +948,42 @@ void ClientCommand (edict_t *ent)
 		Cmd_Use_f (ent);
 	else if (Q_stricmp (cmd, "drop") == 0)
 		Cmd_Drop_f (ent);
-	else if (Q_stricmp (cmd, "MagicSlow") == 0)
-		Magic_Fire (ent);	
+	/*
+		added code stuff for non-ammo attacks
+	*/
+	else if (Q_stricmp (cmd, "MagicFor") == 0)
+	{
+
+		AngleVectors (ent->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+		VectorScale (forward, -2, ent->client->kick_origin);
+		ent->client->kick_angles[0] = -1;
+		
+		VectorScale (forward,1000,dir);  
+		VectorCopy (dir, ent->velocity);
+
+	}
+	else if (Q_stricmp (cmd, "MagicBack") == 0)
+	{
+
+		AngleVectors (ent->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+		VectorScale (forward, -2, ent->client->kick_origin);
+		ent->client->kick_angles[0] = -1;
+		
+		VectorScale (forward,-1000,dir);  
+		VectorCopy (dir, ent->velocity);
+
+	}
+	/*
+		End of added stuff
+	*/
 	else if (Q_stricmp (cmd, "give") == 0)
 		Cmd_Give_f (ent);
 	else if (Q_stricmp (cmd, "god") == 0)
@@ -1028,6 +1026,4 @@ void ClientCommand (edict_t *ent)
 		Cmd_PlayerList_f(ent);
 	else	// anything that doesn't match a command will be a chat
 		Cmd_Say_f (ent, false, true);
-	gi.cprintf (ent, PRINT_HIGH, "Chatting this place up!!!!!\n");
-
 }

@@ -766,7 +766,7 @@ void Weapon_RocketLauncher_Fire (edict_t *ent)
 	fire_rocket (ent, start, forward, damage, 650, damage_radius, 0);
 	
 	VectorScale (dir,-40,forward);
-	VectorAdd (forward, dir, ent->velocity);
+	VectorCopy (dir, ent->velocity);
 
 	//tutorial block for weapon sabotage
 	
@@ -820,9 +820,6 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	ent->client->kick_angles[0] = -1;
 
 	fire_rocket (ent, start, forward, 1000, 900, 40, 0);
-
-	VectorScale (forward,1000,dir);  //let's just say, lol
-	VectorCopy (dir, ent->velocity); //this, too, yooooooo
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
