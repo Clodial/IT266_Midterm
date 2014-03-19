@@ -900,7 +900,11 @@ void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, f
 */
 void Magic_Mix_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
-
+	
+}
+void Magic_Fire_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	
 }
 void Magic_Blast_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
@@ -946,69 +950,95 @@ void Magic_Blast_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_
 	if (ent->waterlevel)
 		gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
 	else
+		 
+
 		gi.WriteByte (TE_ROCKET_EXPLOSION);
 	gi.WritePosition (origin);
 	gi.multicast (ent->s.origin, MULTICAST_PHS);
 
 	G_FreeEdict (ent);
 }
-void Magic_Slow_Fire (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage, int timer)
+void Magic_Slow_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
+{
+	edict_t	*rocket;
+
+	rocket = G_Spawn();
+	VectorCopy (start, rocket->s.origin);
+	VectorCopy (dir, rocket->movedir);
+	vectoangles (dir, rocket->s.angles);
+	VectorScale (dir, speed, rocket->velocity);
+	rocket->movetype = MOVETYPE_FLYMISSILE;
+	rocket->clipmask = MASK_SHOT;
+	rocket->solid = SOLID_BBOX;
+	rocket->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (rocket->mins);
+	VectorClear (rocket->maxs);
+	rocket->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	rocket->owner = self;
+	rocket->touch = Magic_Fire_Touch;
+	rocket->nextthink = level.time + 8000/speed;
+	rocket->think = G_FreeEdict;
+	rocket->dmg = damage;
+	rocket->s.sound = gi.soundindex ("weapons/rockfly.wav");
+
+	if (self->client)
+		check_dodge (self, rocket->s.origin, dir, speed);
+
+	gi.linkentity (rocket);
+}
+void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed, int timer)
 {
 
 }
-void Magic_Slow_Poison (edict_t *ent, vec3_t start, vec3_t dir, int speed, int timer)
+void Magic_Slow_Blast (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
 
 }
-void Magic_Slow_Blast (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage)
+void Magic_Slow_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius)
 {
 
 }
-void Magic_Slow_Radial (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage)
+void Magic_Slow_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
 
 }
-void Magic_Slow_Mix (edict_t *ent, vec3_t start, vec3_t dir, int speed)
+void Magic_Fast_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
 
 }
-void Magic_Fast_Fire (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage, int timer)
+void Magic_Fast_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
 
 }
-void Magic_Fast_Poison (edict_t *ent, vec3_t start, vec3_t dir, int speed, int timer)
+void Magic_Fast_Blast (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
 
 }
-void Magic_Fast_Blast (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage)
+void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius)
 {
 
 }
-void Magic_Fast_Radial (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage)
+void Magic_Fast_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
 
 }
-void Magic_Fast_Mix (edict_t *ent, vec3_t start, vec3_t dir, int speed)
+void Magic_Combo_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
 
 }
-void Magic_Combo_Fire (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage, int timer)
+void Magic_Combo_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
 
 }
-void Magic_Combo_Poison (edict_t *ent, vec3_t start, vec3_t dir, int speed, int timer)
+void Magic_Combo_Blast (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
 
 }
-void Magic_Combo_Blast (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage)
+void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
 
 }
-void Magic_Combo_Radial (edict_t *ent, vec3_t start, vec3_t dir, int speed, int damage)
-{
-
-}
-void Magic_Combo_Extreme (edict_t *ent, vec3_t start, vec3_t dir, int speed)
+void Magic_Combo_Extreme (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
 
 }
