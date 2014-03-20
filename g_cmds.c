@@ -992,7 +992,23 @@ void ClientCommand (edict_t *ent)
 
 		VectorScale (forward, -2, ent->client->kick_origin);
 		ent->client->kick_angles[0] = -1;
-		Magic_Slow_Fire (ent, start, forward, 100, 10); 
+		Magic_Slow_Fire (ent, start, forward, 200, 20); 
+
+		gi.WriteByte (svc_muzzleflash);
+		gi.WriteShort (ent-g_edicts);
+		gi.WriteByte (MZ_ROCKET | is_silenced);
+		gi.multicast (ent->s.origin, MULTICAST_PVS);
+	}
+	else if (Q_stricmp (cmd, "MagGrabS") == 0)
+	{
+		AngleVectors (ent->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+		VectorScale (forward, -2, ent->client->kick_origin);
+		ent->client->kick_angles[0] = -1;
+		Magic_Slow_Grab (ent, start, forward, 200); 
 
 		gi.WriteByte (svc_muzzleflash);
 		gi.WriteShort (ent-g_edicts);

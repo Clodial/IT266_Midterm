@@ -728,25 +728,26 @@ magic mod functions
 */
 void Magic_Mix_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
 void Magic_Fire_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Magic_Grab_S_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf, vec3_t start, vec3_t dir);
 void Magic_Blast_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
 
 void Magic_Slow_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed);
-void Magic_Slow_Blast (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
+void Magic_Slow_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Slow_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius);
 void Magic_Slow_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed);
 
 void Magic_Fast_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Fast_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed);
-void Magic_Fast_Blast (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
+void Magic_Fast_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius);
 void Magic_Fast_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed);
 
 void Magic_Combo_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Combo_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed);
-void Magic_Combo_Blast (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
+void Magic_Combo_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
-void Magic_Combo_Extreme (edict_t *self, vec3_t start, vec3_t dir, int speed);
+void Magic_Combo_Nuke (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage, int damage_radius, int radius_damage);
 
 //
 // g_ptrail.c
@@ -1123,5 +1124,9 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
+
+	/*
+		
+	*/
 };
 

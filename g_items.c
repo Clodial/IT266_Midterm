@@ -139,6 +139,21 @@ void SetRespawn (edict_t *ent, float delay)
 
 qboolean Pickup_Powerup (edict_t *ent, edict_t *other)
 {
+	vec3_t		origin;
+	qboolean	taken;
+	int			mod;
+	float		points;
+	vec3_t		v;
+	vec3_t		dir;
+	int			index;
+	gitem_t		*ammo;
+
+	VectorAdd (other->mins, other->maxs, v);
+	VectorMA (other->s.origin, 0.5, v, v);
+	VectorSubtract (other->s.origin, v, v);
+	points = other->dmg - 0.5 * VectorLength (v);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	/*
 	int		quantity;
 
 	quantity = other->client->pers.inventory[ITEM_INDEX(ent->item)];
@@ -161,8 +176,9 @@ qboolean Pickup_Powerup (edict_t *ent, edict_t *other)
 			ent->item->use (other, ent->item);
 		}
 	}
-
-	return true;
+	*/
+	SetRespawn (ent, ent->item->quantity);
+	return false;
 }
 
 void Drop_General (edict_t *ent, gitem_t *item)
@@ -186,21 +202,51 @@ qboolean Pickup_Adrenaline (edict_t *ent, edict_t *other)
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
 
-	return true;
+	return false;
 }
 
 qboolean Pickup_AncientHead (edict_t *ent, edict_t *other)
 {
-	other->max_health += 2;
+	vec3_t		origin;
+	qboolean	taken;
+	int			mod;
+	float		points;
+	vec3_t		v;
+	vec3_t		dir;
+	int			index;
+	gitem_t		*ammo;
 
+	VectorAdd (other->mins, other->maxs, v);
+	VectorMA (other->s.origin, 0.5, v, v);
+	VectorSubtract (other->s.origin, v, v);
+	points = other->dmg - 0.5 * VectorLength (v);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 20, 0, mod);
+	/*
+	other->max_health += 2;
+	*/
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
-
-	return true;
+	
+	return false;
 }
 
 qboolean Pickup_Bandolier (edict_t *ent, edict_t *other)
 {
+	vec3_t		origin;
+	qboolean	taken;
+	int			mod;
+	float		points;
+	vec3_t		v;
+	vec3_t		dir;
+	int			index;
+	gitem_t		*ammo;
+
+	VectorAdd (other->mins, other->maxs, v);
+	VectorMA (other->s.origin, 0.5, v, v);
+	VectorSubtract (other->s.origin, v, v);
+	points = other->dmg - 0.5 * VectorLength (v);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	/*
 	gitem_t	*item;
 	int		index;
 
@@ -230,15 +276,30 @@ qboolean Pickup_Bandolier (edict_t *ent, edict_t *other)
 		if (other->client->pers.inventory[index] > other->client->pers.max_shells)
 			other->client->pers.inventory[index] = other->client->pers.max_shells;
 	}
-
+	*/
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
 
-	return true;
+	return false;
 }
 
 qboolean Pickup_Pack (edict_t *ent, edict_t *other)
 {
+	vec3_t		origin;
+	qboolean	taken;
+	int			mod;
+	float		points;
+	vec3_t		v;
+	vec3_t		dir;
+	int			index;
+	gitem_t		*ammo;
+
+	VectorAdd (other->mins, other->maxs, v);
+	VectorMA (other->s.origin, 0.5, v, v);
+	VectorSubtract (other->s.origin, v, v);
+	points = other->dmg - 0.5 * VectorLength (v);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	/*
 	gitem_t	*item;
 	int		index;
 
@@ -308,11 +369,11 @@ qboolean Pickup_Pack (edict_t *ent, edict_t *other)
 		if (other->client->pers.inventory[index] > other->client->pers.max_slugs)
 			other->client->pers.inventory[index] = other->client->pers.max_slugs;
 	}
-
+	*/
 	if (!(ent->spawnflags & DROPPED_ITEM) && (deathmatch->value))
 		SetRespawn (ent, ent->item->quantity);
-
-	return true;
+	
+	return false;
 }
 
 //======================================================================
@@ -463,6 +524,21 @@ qboolean Add_Ammo (edict_t *ent, gitem_t *item, int count)
 
 qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 {
+	vec3_t		origin;
+	qboolean	taken;
+	int			mod;
+	float		points;
+	vec3_t		v;
+	vec3_t		dir;
+	int			index;
+	gitem_t		*ammo;
+
+	VectorAdd (other->mins, other->maxs, v);
+	VectorMA (other->s.origin, 0.5, v, v);
+	VectorSubtract (other->s.origin, v, v);
+	points = other->dmg - 0.5 * VectorLength (v);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	/*
 	int			oldcount;
 	int			count;
 	qboolean	weapon;
@@ -485,10 +561,11 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 		if (other->client->pers.weapon != ent->item && ( !deathmatch->value || other->client->pers.weapon == FindItem("blaster") ) )
 			other->client->newweapon = ent->item;
 	}
-
+	*/
 	if (!(ent->spawnflags & (DROPPED_ITEM | DROPPED_PLAYER_ITEM)) && (deathmatch->value))
 		SetRespawn (ent, 30);
-	return true;
+
+	return false;
 }
 
 void Drop_Ammo (edict_t *ent, gitem_t *item)
@@ -741,7 +818,12 @@ Touch_Item
 */
 void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
+	vec3_t		origin;
 	qboolean	taken;
+	int			mod;
+	float	points;
+	vec3_t	v;
+	vec3_t	dir;
 
 	if (!other->client)
 		return;
@@ -751,7 +833,7 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 		return;		// not a grabbable item?
 
 	taken = ent->item->pickup(ent, other);
-
+	
 	if (taken)
 	{
 		// flash the screen
@@ -782,13 +864,13 @@ void Touch_Item (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf
 			gi.sound(other, CHAN_ITEM, gi.soundindex(ent->item->pickup_sound), 1, ATTN_NORM, 0);
 		}
 	}
-
+	
 	if (!(ent->spawnflags & ITEM_TARGETS_USED))
 	{
 		G_UseTargets (ent, other);
 		ent->spawnflags |= ITEM_TARGETS_USED;
 	}
-
+	
 	if (!taken)
 		return;
 

@@ -98,9 +98,21 @@ void PlayerNoise(edict_t *who, vec3_t where, int type)
 
 qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 {
+	vec3_t		origin;
+	qboolean	taken;
+	int			mod;
+	float		points;
+	vec3_t		v;
+	vec3_t		dir;
 	int			index;
 	gitem_t		*ammo;
 
+	VectorAdd (other->mins, other->maxs, v);
+	VectorMA (other->s.origin, 0.5, v, v);
+	VectorSubtract (other->s.origin, v, v);
+	points = other->dmg - 0.5 * VectorLength (v);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 200, 0, mod);
+/*
 	index = ITEM_INDEX(ent->item);
 
 	if ( ( ((int)(dmflags->value) & DF_WEAPONS_STAY) || coop->value) 
@@ -139,8 +151,20 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 		(other->client->pers.inventory[index] == 1) &&
 		( !deathmatch->value || other->client->pers.weapon == FindItem("blaster") ) )
 		other->client->newweapon = ent->item;
-
-	return true;
+*/
+	if (! (ent->spawnflags & DROPPED_PLAYER_ITEM) )
+	{
+		if (deathmatch->value)
+		{
+			if ((int)(dmflags->value) & DF_WEAPONS_STAY)
+				ent->flags |= FL_RESPAWN;
+			else
+				SetRespawn (ent, 30);
+		}
+		if (coop->value)
+			ent->flags |= FL_RESPAWN;
+	}
+	return false;
 }
 
 
