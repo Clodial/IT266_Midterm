@@ -726,27 +726,28 @@ void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, f
 /*
 magic mod functions
 */
-void Magic_Mix_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
 void Magic_Fire_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
-void Magic_Grab_S_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf, vec3_t start, vec3_t dir);
-void Magic_Blast_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Magic_Grab_S_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Magic_Radial_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Magic_Heal_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Magic_MixS_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
 
 void Magic_Slow_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed);
-void Magic_Slow_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
-void Magic_Slow_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius);
+void Magic_Slow_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed);
+void Magic_Slow_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius, int radius_damage);
 void Magic_Slow_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed);
 
 void Magic_Fast_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Fast_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed);
-void Magic_Fast_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
-void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius);
+void Magic_Fast_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed);
+void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius, int radius_damage);
 void Magic_Fast_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed);
 
 void Magic_Combo_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Combo_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed);
-void Magic_Combo_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
-void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
+void Magic_Combo_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed);
+void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius, int radius_damage );
 void Magic_Combo_Nuke (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage, int damage_radius, int radius_damage);
 
 //
@@ -855,6 +856,9 @@ typedef struct
 	int			health;
 	int			max_health;
 	int			savedFlags;
+
+	int			max_mana;
+	int			mana;
 
 	int			selected_item;
 	int			inventory[MAX_ITEMS];
@@ -1126,7 +1130,13 @@ struct edict_s
 	monsterinfo_t	monsterinfo;
 
 	/*
-		
+		Stuff I'm adding
+	*/
+	int			magicType;
+	int			max_mana;
+	int			mana;
+	/*
+		end of all the things I'm adding
 	*/
 };
 

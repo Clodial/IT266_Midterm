@@ -906,11 +906,18 @@ ClientCommand
 */
 void ClientCommand (edict_t *ent)
 {
-	vec3_t  dir;
-	vec3_t	forward, right;
-	vec3_t	start;
-	vec3_t	offset;
-	char	*cmd;
+	vec3_t		origin;
+	qboolean	taken;
+	int			mod;
+	float		points;
+	vec3_t		v;
+	vec3_t		dirs;
+	int			index;
+	vec3_t		dir, point;
+	vec3_t		forward, right;
+	vec3_t		start;
+	vec3_t		offset;
+	char		*cmd;
 
 	if (!ent->client)
 		return;		// not fully in game yet
@@ -956,48 +963,82 @@ void ClientCommand (edict_t *ent)
 	else if (Q_stricmp (cmd, "MagicFor") == 0)
 	{
 
-		AngleVectors (ent->client->v_angle, forward, right, NULL);
-		VectorSet(offset, 24, 8, ent->viewheight-8);
-		VectorAdd (offset, vec3_origin, offset);
-		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		if(ent->health > 1)
+		{
+			AngleVectors (ent->client->v_angle, forward, right, NULL);
+			VectorSet(offset, 24, 8, ent->viewheight-8);
+			VectorAdd (offset, vec3_origin, offset);
+			P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
-		VectorScale (forward, -2, ent->client->kick_origin);
-		ent->client->kick_angles[0] = -1;
-		
-		VectorScale (forward,1000,dir);  
-		VectorCopy (dir, ent->velocity);
+			VectorScale (forward, -2, ent->client->kick_origin);
+			ent->client->kick_angles[0] = -1;
+			
+			VectorScale (forward,1000,dirs);  
+			VectorCopy (dirs, ent->velocity);
+
+			VectorAdd (ent->mins, ent->maxs, v);
+			VectorMA (ent->s.origin, 0.5, v, v);
+			VectorSubtract (ent->s.origin, v, v);
+			points = ent->dmg - 0.5 * VectorLength (v);
+			T_Damage (ent, ent, ent, dir, ent->s.origin, vec3_origin, 1, 0, 0, mod);
+		}
+		else
+		{
+			gi.cprintf(ent,PRINT_HIGH,"Not Enough Health. \n");
+		}
 
 	}
 	else if (Q_stricmp (cmd, "MagicBack") == 0)
 	{
+		if(ent->health > 1)
+		{
+			AngleVectors (ent->client->v_angle, forward, right, NULL);
+			VectorSet(offset, 24, 8, ent->viewheight-8);
+			VectorAdd (offset, vec3_origin, offset);
+			P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
-		AngleVectors (ent->client->v_angle, forward, right, NULL);
-		VectorSet(offset, 24, 8, ent->viewheight-8);
-		VectorAdd (offset, vec3_origin, offset);
-		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+			VectorScale (forward, -2, ent->client->kick_origin);
+			ent->client->kick_angles[0] = -1;
+			
+			VectorScale (forward,-1000,dirs);  
+			VectorCopy (dirs, ent->velocity);
 
-		VectorScale (forward, -2, ent->client->kick_origin);
-		ent->client->kick_angles[0] = -1;
-		
-		VectorScale (forward,-1000,dir);  
-		VectorCopy (dir, ent->velocity);
+			VectorAdd (ent->mins, ent->maxs, v);
+			VectorMA (ent->s.origin, 0.5, v, v);
+			VectorSubtract (ent->s.origin, v, v);
+			points = ent->dmg - 0.5 * VectorLength (v);
+			T_Damage (ent, ent, ent, dir, ent->s.origin, vec3_origin, 1, 0, 0, mod);
+		}
+		else
+		{
+			gi.cprintf(ent,PRINT_HIGH,"Not Enough Health. \n");
+		}
 
 	}
 	else if (Q_stricmp (cmd, "MagFireS") == 0)
 	{
-		AngleVectors (ent->client->v_angle, forward, right, NULL);
-		VectorSet(offset, 24, 8, ent->viewheight-8);
-		VectorAdd (offset, vec3_origin, offset);
-		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+		if(ent->mana > 20)
+		{
+			AngleVectors (ent->client->v_angle, forward, right, NULL);
+			VectorSet(offset, 24, 8, ent->viewheight-8);
+			VectorAdd (offset, vec3_origin, offset);
+			P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
-		VectorScale (forward, -2, ent->client->kick_origin);
-		ent->client->kick_angles[0] = -1;
-		Magic_Slow_Fire (ent, start, forward, 200, 20); 
+			VectorScale (forward, -2, ent->client->kick_origin);
+			ent->client->kick_angles[0] = -1;
+			Magic_Slow_Fire (ent, start, forward, 200, 20); 
 
-		gi.WriteByte (svc_muzzleflash);
-		gi.WriteShort (ent-g_edicts);
-		gi.WriteByte (MZ_ROCKET | is_silenced);
-		gi.multicast (ent->s.origin, MULTICAST_PVS);
+			gi.WriteByte (svc_muzzleflash);
+			gi.WriteShort (ent-g_edicts);
+			gi.WriteByte (MZ_ROCKET | is_silenced);
+			gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+			ent->mana = ent->mana - 20;
+		}
+		else
+		{
+			gi.cprintf(ent,PRINT_HIGH,"Not Enough Mana \n");
+		}
 	}
 	else if (Q_stricmp (cmd, "MagGrabS") == 0)
 	{
@@ -1009,6 +1050,22 @@ void ClientCommand (edict_t *ent)
 		VectorScale (forward, -2, ent->client->kick_origin);
 		ent->client->kick_angles[0] = -1;
 		Magic_Slow_Grab (ent, start, forward, 200); 
+
+		gi.WriteByte (svc_muzzleflash);
+		gi.WriteShort (ent-g_edicts);
+		gi.WriteByte (MZ_ROCKET | is_silenced);
+		gi.multicast (ent->s.origin, MULTICAST_PVS);
+	}
+	else if (Q_stricmp (cmd, "MagHealS") == 0)
+	{
+		AngleVectors (ent->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+		VectorScale (forward, -2, ent->client->kick_origin);
+		ent->client->kick_angles[0] = -1;
+		Magic_Slow_Heal (ent, start, forward, 200); 
 
 		gi.WriteByte (svc_muzzleflash);
 		gi.WriteShort (ent-g_edicts);

@@ -141,7 +141,6 @@ qboolean Pickup_Powerup (edict_t *ent, edict_t *other)
 {
 	vec3_t		origin;
 	qboolean	taken;
-	int			mod;
 	float		points;
 	vec3_t		v;
 	vec3_t		dir;
@@ -152,7 +151,7 @@ qboolean Pickup_Powerup (edict_t *ent, edict_t *other)
 	VectorMA (other->s.origin, 0.5, v, v);
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
-	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, MOD_R_SPLASH);
 	/*
 	int		quantity;
 
@@ -220,7 +219,7 @@ qboolean Pickup_AncientHead (edict_t *ent, edict_t *other)
 	VectorMA (other->s.origin, 0.5, v, v);
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
-	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 20, 0, mod);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 20, 0, MOD_R_SPLASH);
 	/*
 	other->max_health += 2;
 	*/
@@ -245,7 +244,18 @@ qboolean Pickup_Bandolier (edict_t *ent, edict_t *other)
 	VectorMA (other->s.origin, 0.5, v, v);
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
-	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, MOD_R_SPLASH);
+	if(other->mana < other->client->pers.max_mana)
+	{
+		if(other->mana >= (other->client->pers.max_mana - 40))
+		{
+			other->mana = other->client->pers.max_mana;
+		}
+		else
+		{
+			other->mana = other->mana + 40;
+		}
+	}
 	/*
 	gitem_t	*item;
 	int		index;
@@ -298,7 +308,18 @@ qboolean Pickup_Pack (edict_t *ent, edict_t *other)
 	VectorMA (other->s.origin, 0.5, v, v);
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
-	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, MOD_R_SPLASH);
+	if(other->mana < other->client->pers.max_mana)
+	{
+		if(other->mana >= (other->client->pers.max_mana - 100))
+		{
+			other->mana = other->client->pers.max_mana;
+		}
+		else
+		{
+			other->mana = other->mana + 100;
+		}
+	}
 	/*
 	gitem_t	*item;
 	int		index;
@@ -537,7 +558,18 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 	VectorMA (other->s.origin, 0.5, v, v);
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
-	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, mod);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, MOD_R_SPLASH);
+	if(other->mana < other->client->pers.max_mana)
+	{
+		if(other->mana >= (other->client->pers.max_mana - 20))
+		{
+			other->mana = other->client->pers.max_mana;
+		}
+		else
+		{
+			other->mana = other->mana + 20;
+		}
+	}
 	/*
 	int			oldcount;
 	int			count;
@@ -618,6 +650,24 @@ qboolean Pickup_Health (edict_t *ent, edict_t *other)
 			return false;
 
 	other->health += ent->count;
+	gi.cprintf(other,PRINT_HIGH, "meh\n");
+	if((other->mana) < (other->max_mana))
+	{
+		if((other->mana) >= (other->max_mana - 20))
+		{
+			other->mana = other->max_mana;
+		}
+		else
+		{
+			other->mana += other->mana + 20;
+		}
+		gi.cprintf(other,PRINT_HIGH, "worked\n");
+	}
+	else
+	{
+		gi.cprintf(other,PRINT_HIGH, "Something's wrong\n");
+	}
+
 
 	if (!(ent->style & HEALTH_IGNORE_MAX))
 	{
