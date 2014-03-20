@@ -969,6 +969,82 @@ void Magic_Grab_S_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface
 	vec3_t		start;
 	vec3_t		offset;
 
+	vec3_t		origin;
+	int			mod;
+
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+	if(deathmatch)
+	{
+		if ((other != ent->owner) && !plane)
+		{
+			AngleVectors (other->client->v_angle, forward, right, NULL);
+			VectorSet(offset, 24, 8, ent->viewheight-8);
+			VectorAdd (offset, vec3_origin, offset);
+			P_ProjectSource (other->client, other->s.origin, offset, forward, right, start);
+		
+			VectorScale (ent->owner->velocity,1000,p_throw);  
+			VectorCopy (p_throw, other->velocity);
+		}
+		else
+		{
+			gi.WriteByte (svc_temp_entity);
+			gi.WriteByte (TE_BLASTER);
+			gi.WritePosition (ent->s.origin);
+			if (!plane)
+				gi.WriteDir (vec3_origin);
+			else
+				gi.WriteDir (plane->normal);
+			gi.multicast (ent->s.origin, MULTICAST_PVS);
+		}
+	}
+	else
+	{
+		VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+		if (other->takedamage)
+		{
+			if (ent->spawnflags & 1)
+				mod = MOD_HYPERBLASTER;
+			else
+				mod = MOD_BLASTER;
+			T_Damage (other, ent, ent->owner, ent->velocity, ent->s.origin, plane->normal, ent->dmg, 10, DAMAGE_ENERGY, mod);
+			gi.WriteByte (svc_temp_entity);
+			if (ent->waterlevel)
+				gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+			else
+				 gi.WriteByte (TE_ROCKET_EXPLOSION);
+			gi.WritePosition (origin);
+			gi.multicast (ent->s.origin, MULTICAST_PHS);
+		}
+		else
+		{
+			gi.WriteByte (svc_temp_entity);
+			gi.WriteByte (TE_BLASTER);
+			gi.WritePosition (ent->s.origin);
+			if (!plane)
+				gi.WriteDir (vec3_origin);
+			else
+				gi.WriteDir (plane->normal);
+			gi.multicast (ent->s.origin, MULTICAST_PVS);
+		}
+	}
+
+	G_FreeEdict(ent);
+}
+void Magic_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	vec3_t	origin;
+	int		mod;
+
 	if (other == ent->owner)
 		return;
 
@@ -981,81 +1057,30 @@ void Magic_Grab_S_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface
 	if (ent->owner->client)
 		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
 
-	if (other != ent->owner)
-	{
-		AngleVectors (other->client->v_angle, forward, right, NULL);
-		VectorSet(offset, 24, 8, ent->viewheight-8);
-		VectorAdd (offset, vec3_origin, offset);
-		P_ProjectSource (other->client, other->s.origin, offset, forward, right, start);
-	
-		VectorScale (forward, -2, other->client->kick_origin);
-		other->client->kick_angles[0] = -1;
-		
-		VectorScale (ent->owner->velocity,1000,p_throw);  
-		VectorCopy (p_throw, other->velocity);
-	}
-
-	gi.WriteByte (svc_temp_entity);
-	gi.WriteByte (TE_BLASTER);
-	gi.WritePosition (ent->s.origin);
-	if (!plane)
-		gi.WriteDir (vec3_origin);
-	else
-		gi.WriteDir (plane->normal);
-	gi.multicast (ent->s.origin, MULTICAST_PVS);
-
-	G_FreeEdict(ent);
-}
-void Magic_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
-{
-	vec3_t		origin;
-	int			n;
-	int			count;
-
-	if (surf && (surf->flags & SURF_SKY))
-	{
-		G_FreeEdict (ent);
-		return;
-	}
-
-	if (ent->owner->client)
-		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
-
-	// calculate position for the explosion entity
 	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
-
-
-	
-	// don't throw any debris in net games
-	if (!deathmatch->value && !coop->value)
+	if (other->takedamage)
 	{
-		if ((surf) && !(surf->flags & (SURF_WARP|SURF_TRANS33|SURF_TRANS66|SURF_FLOWING)))
-		{
-			n = rand() % 5;
-			while(n--)
-				ThrowDebris (ent, "models/objects/debris2/tris.md2", 2, ent->s.origin);
-		}
+		other->health += 10;
+		gi.WriteByte (svc_temp_entity);
+		if (ent->waterlevel)
+			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+		else
+			 gi.WriteByte (TE_ROCKET_EXPLOSION);
+		gi.WritePosition (origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
 	}
-
-	if (!(ent->style & HEALTH_IGNORE_MAX))
-		if (other->health >= other->max_health)
-			return;
-
-	other->health += ent->count;
-
-	if (!(ent->style & HEALTH_IGNORE_MAX))
-	{
-		if (other->health > other->max_health)
-			other->health = other->max_health;
-	}
-
-	gi.WriteByte (svc_temp_entity);
-	if (ent->waterlevel)
-		gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
 	else
-		 gi.WriteByte (TE_ROCKET_EXPLOSION);
-	gi.WritePosition (origin);
-	gi.multicast (ent->s.origin, MULTICAST_PHS);
+	{	
+
+		gi.WriteByte (svc_temp_entity);
+		if (ent->waterlevel)
+			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+		else
+			 gi.WriteByte (TE_ROCKET_EXPLOSION);
+		gi.WritePosition (origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
+
+	}
 
 	G_FreeEdict (ent);
 }
@@ -1440,7 +1465,7 @@ void Magic_Combo_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 
 	gi.linkentity (slowHeal);
 }
-void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
+void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius, int radius_damage)
 {
 	edict_t	*slowMix;
 

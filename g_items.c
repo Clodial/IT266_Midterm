@@ -651,23 +651,17 @@ qboolean Pickup_Health (edict_t *ent, edict_t *other)
 
 	other->health += ent->count;
 	gi.cprintf(other,PRINT_HIGH, "meh\n");
-	if((other->mana) < (other->max_mana))
+
+	if((other->mana) <= (180))
 	{
-		if((other->mana) >= (other->max_mana - 20))
-		{
-			other->mana = other->max_mana;
-		}
-		else
-		{
-			other->mana += other->mana + 20;
-		}
-		gi.cprintf(other,PRINT_HIGH, "worked\n");
+		other->mana += 20;
 	}
 	else
 	{
-		gi.cprintf(other,PRINT_HIGH, "Something's wrong\n");
+		other->mana = 200;
 	}
-
+		
+	gi.cprintf(other,PRINT_HIGH, "Something's wrong\n");
 
 	if (!(ent->style & HEALTH_IGNORE_MAX))
 	{
