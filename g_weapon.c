@@ -1160,6 +1160,68 @@ void Magic_MixS_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t
 	G_FreeEdict (ent);
 }
 
+void Magic_MixF_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	vec3_t		forward, right;
+	vec3_t		start;
+	vec3_t		offset;
+	vec3_t		origin;
+	int			n;
+
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+
+	// calculate position for the explosion entity
+	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+
+	
+		// don't throw any debris in net games
+	if (!deathmatch->value && !coop->value)
+	{
+		if ((surf) && !(surf->flags & (SURF_WARP|SURF_TRANS33|SURF_TRANS66|SURF_FLOWING)))
+		{
+			n = rand() % 5;
+			while(n--)
+				ThrowDebris (ent, "models/objects/debris2/tris.md2", 2, ent->s.origin);
+		}
+	}
+	
+	if (other->magicType == 5)
+	{
+		AngleVectors (ent->owner->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->owner->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->owner->client, ent->owner->s.origin, offset, forward, right, start);
+
+		Magic_Combo_Nuke (ent->owner, start, forward, 2, 999999, 999999, 999999);
+	}
+	else
+	{	
+		if(other->magicType == 14)
+		{
+			G_FreeEdict(other); //NUKE KILLA
+		}
+		gi.WriteByte (svc_temp_entity);
+		if (ent->waterlevel)
+			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+		else
+			gi.WriteByte (TE_ROCKET_EXPLOSION);
+		gi.WritePosition (origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
+		T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
+	}
+	G_FreeEdict (ent);
+}
+
 void Combo_Fire_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	vec3_t	origin;
@@ -1430,32 +1492,32 @@ void Combo_Nuke_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t
 
 void Magic_Slow_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
-	edict_t	*slowFire;
+	edict_t	*fastFire;
 
-	slowFire = G_Spawn();
-	VectorCopy (start, slowFire->s.origin);
-	VectorCopy (dir, slowFire->movedir);
-	vectoangles (dir, slowFire->s.angles);
-	VectorScale (dir, speed, slowFire->velocity);
-	slowFire->movetype = MOVETYPE_FLYMISSILE;
-	slowFire->clipmask = MASK_SHOT;
-	slowFire->solid = SOLID_BBOX;
-	slowFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowFire->mins);
-	VectorClear (slowFire->maxs);
-	slowFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowFire->owner = self;
-	slowFire->touch = Magic_Fire_Touch;
-	slowFire->nextthink = level.time + 8000/speed;
-	slowFire->think = G_FreeEdict;
-	slowFire->dmg = damage;
-	slowFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowFire->magicType = 1; //basic lvl1 spell
+	fastFire = G_Spawn();
+	VectorCopy (start, fastFire->s.origin);
+	VectorCopy (dir, fastFire->movedir);
+	vectoangles (dir, fastFire->s.angles);
+	VectorScale (dir, speed, fastFire->velocity);
+	fastFire->movetype = MOVETYPE_FLYMISSILE;
+	fastFire->clipmask = MASK_SHOT;
+	fastFire->solid = SOLID_BBOX;
+	fastFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (fastFire->mins);
+	VectorClear (fastFire->maxs);
+	fastFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	fastFire->owner = self;
+	fastFire->touch = Magic_Fire_Touch;
+	fastFire->nextthink = level.time + 8000/speed;
+	fastFire->think = G_FreeEdict;
+	fastFire->dmg = damage;
+	fastFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	fastFire->magicType = 1; //basic lvl1 spell
 
 	if (self->client)
-		check_dodge (self, slowFire->s.origin, dir, speed);
+		check_dodge (self, fastFire->s.origin, dir, speed);
 
-	gi.linkentity (slowFire);
+	gi.linkentity (fastFire);
 }
 void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
@@ -1576,90 +1638,90 @@ void Magic_Slow_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 }
 void Magic_Fast_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
-	edict_t	*slowFire;
+	edict_t	*fastFire;
 
-	slowFire = G_Spawn();
-	VectorCopy (start, slowFire->s.origin);
-	VectorCopy (dir, slowFire->movedir);
-	vectoangles (dir, slowFire->s.angles);
-	VectorScale (dir, speed, slowFire->velocity);
+	fastFire = G_Spawn();
+	VectorCopy (start, fastFire->s.origin);
+	VectorCopy (dir, fastFire->movedir);
+	vectoangles (dir, fastFire->s.angles);
+	VectorScale (dir, speed, fastFire->velocity);
 	
-	slowFire->movetype = MOVETYPE_FLYMISSILE;
-	slowFire->clipmask = MASK_SHOT;
-	slowFire->solid = SOLID_BBOX;
-	slowFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowFire->mins);
-	VectorClear (slowFire->maxs);
-	slowFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowFire->owner = self;
-	slowFire->touch = Magic_Fire_Touch;
-	slowFire->nextthink = level.time + 8000/speed;
-	slowFire->think = G_FreeEdict;
-	slowFire->dmg = damage;
-	slowFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowFire->magicType = 5; //basic lvl1 spell
+	fastFire->movetype = MOVETYPE_FLYMISSILE;
+	fastFire->clipmask = MASK_SHOT;
+	fastFire->solid = SOLID_BBOX;
+	fastFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (fastFire->mins);
+	VectorClear (fastFire->maxs);
+	fastFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	fastFire->owner = self;
+	fastFire->touch = Magic_Fire_Touch;
+	fastFire->nextthink = level.time + 8000/speed;
+	fastFire->think = G_FreeEdict;
+	fastFire->dmg = damage;
+	fastFire->s.sound = gi.soundindex ("models/objects/rocket/tris.md2");
+	fastFire->magicType = 5; //basic lvl1 spell
 
 	if (self->client)
-		check_dodge (self, slowFire->s.origin, dir, speed);
+		check_dodge (self, fastFire->s.origin, dir, speed);
 
-	gi.linkentity (slowFire);
+	gi.linkentity (fastFire);
 }
 void Magic_Fast_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
-	edict_t	*slowGrab;
+	edict_t	*fastGrab;
 
-	slowGrab = G_Spawn();
-	VectorCopy (start, slowGrab->s.origin);
-	VectorCopy (dir, slowGrab->movedir);
-	vectoangles (dir, slowGrab->s.angles);
-	VectorScale (dir, speed, slowGrab->velocity);
-	slowGrab->movetype = MOVETYPE_FLYMISSILE;
-	slowGrab->clipmask = MASK_SHOT;
-	slowGrab->solid = SOLID_BBOX;
-	slowGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowGrab->mins);
-	VectorClear (slowGrab->maxs);
-	slowGrab->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowGrab->owner = self;
-	slowGrab->touch = Magic_Grab_S_Touch;
-	slowGrab->nextthink = level.time + 8000/speed;
-	slowGrab->think = G_FreeEdict;
-	slowGrab->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowGrab->magicType = 6;
+	fastGrab = G_Spawn();
+	VectorCopy (start, fastGrab->s.origin);
+	VectorCopy (dir, fastGrab->movedir);
+	vectoangles (dir, fastGrab->s.angles);
+	VectorScale (dir, speed, fastGrab->velocity);
+	fastGrab->movetype = MOVETYPE_FLYMISSILE;
+	fastGrab->clipmask = MASK_SHOT;
+	fastGrab->solid = SOLID_BBOX;
+	fastGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (fastGrab->mins);
+	VectorClear (fastGrab->maxs);
+	fastGrab->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
+	fastGrab->owner = self;
+	fastGrab->touch = Magic_Grab_S_Touch;
+	fastGrab->nextthink = level.time + 8000/speed;
+	fastGrab->think = G_FreeEdict;
+	fastGrab->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	fastGrab->magicType = 6;
 
 	if (self->client)
-		check_dodge (self, slowGrab->s.origin, dir, speed);
+		check_dodge (self, fastGrab->s.origin, dir, speed);
 
-	gi.linkentity (slowGrab);
+	gi.linkentity (fastGrab);
 }
 void Magic_Fast_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
-	edict_t	*slowHeal;
+	edict_t	*fastHeal;
 
-	slowHeal = G_Spawn();
-	VectorCopy (start, slowHeal->s.origin);
-	VectorCopy (dir, slowHeal->movedir);
-	vectoangles (dir, slowHeal->s.angles);
-	VectorScale (dir, speed, slowHeal->velocity);
-	slowHeal->movetype = MOVETYPE_FLYMISSILE;
-	slowHeal->clipmask = MASK_SHOT;
-	slowHeal->solid = SOLID_BBOX;
-	slowHeal->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowHeal->mins);
-	VectorClear (slowHeal->maxs);
-	slowHeal->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowHeal->owner = self;
-	slowHeal->touch = Magic_Heal_Touch;
-	slowHeal->nextthink = level.time + 8000/speed;
-	slowHeal->think = G_FreeEdict;
+	fastHeal = G_Spawn();
+	VectorCopy (start, fastHeal->s.origin);
+	VectorCopy (dir, fastHeal->movedir);
+	vectoangles (dir, fastHeal->s.angles);
+	VectorScale (dir, speed, fastHeal->velocity);
+	fastHeal->movetype = MOVETYPE_FLYMISSILE;
+	fastHeal->clipmask = MASK_SHOT;
+	fastHeal->solid = SOLID_BBOX;
+	fastHeal->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (fastHeal->mins);
+	VectorClear (fastHeal->maxs);
+	fastHeal->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
+	fastHeal->owner = self;
+	fastHeal->touch = Magic_Heal_Touch;
+	fastHeal->nextthink = level.time + 8000/speed;
+	fastHeal->think = G_FreeEdict;
 
-	slowHeal->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowHeal->magicType = 7;
+	fastHeal->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	fastHeal->magicType = 7;
 
 	if (self->client)
-		check_dodge (self, slowHeal->s.origin, dir, speed);
+		check_dodge (self, fastHeal->s.origin, dir, speed);
 
-	gi.linkentity (slowHeal);
+	gi.linkentity (fastHeal);
 }
 void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius, int radius_damage)
 {
@@ -1676,7 +1738,7 @@ void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int 
 	fastRadial->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (fastRadial->mins);
 	VectorClear (fastRadial->maxs);
-	fastRadial->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	fastRadial->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
 	fastRadial->owner = self;
 	fastRadial->touch = Magic_Radial_Touch;
 	fastRadial->nextthink = level.time + 8000/speed;
@@ -1709,9 +1771,9 @@ void Magic_Fast_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	fastMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (fastMix->mins);
 	VectorClear (fastMix->maxs);
-	fastMix->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	fastMix->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
 	fastMix->owner = self;
-	fastMix->touch = Magic_MixS_Touch;
+	fastMix->touch = Magic_MixF_Touch;
 	fastMix->nextthink = level.time + 8000/speed;
 	fastMix->think = G_FreeEdict;
 	fastMix->s.sound = gi.soundindex ("weapons/rockfly.wav");
