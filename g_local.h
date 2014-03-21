@@ -732,6 +732,12 @@ void Magic_Radial_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurfac
 void Magic_Heal_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
 void Magic_MixS_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf);
 
+void Combo_Fire_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Combo_Grab_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Combo_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Combo_Rad_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+void Combo_Nuke_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+
 void Magic_Slow_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage);
 void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed);
 void Magic_Slow_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed);

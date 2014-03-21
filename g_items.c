@@ -646,11 +646,10 @@ void MegaHealth_think (edict_t *self)
 qboolean Pickup_Health (edict_t *ent, edict_t *other)
 {
 	if (!(ent->style & HEALTH_IGNORE_MAX))
-		if (other->health >= other->max_health)
+		if ((other->health >= other->max_health) && (other->mana >= 200))
 			return false;
-
-	other->health += ent->count;
-	gi.cprintf(other,PRINT_HIGH, "meh\n");
+	if(!(other->health >= other->max_health))
+		other->health += ent->count;
 
 	if((other->mana) <= (180))
 	{
@@ -660,8 +659,6 @@ qboolean Pickup_Health (edict_t *ent, edict_t *other)
 	{
 		other->mana = 200;
 	}
-		
-	gi.cprintf(other,PRINT_HIGH, "Something's wrong\n");
 
 	if (!(ent->style & HEALTH_IGNORE_MAX))
 	{

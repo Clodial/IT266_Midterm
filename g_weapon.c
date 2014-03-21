@@ -909,15 +909,266 @@ void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, f
 /*
 	All of the stuff that I will add for the magic combination mod (at least all of the combining stuff)
 */
-void Magic_Mix_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
-{
-	
-}
+void Mix_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point){}
 void Magic_Fire_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	vec3_t		dir, point;
+	vec3_t		forward, right;
+	vec3_t		start;
+	vec3_t		offset;
+	vec3_t		origin;
+	int		mod;
+
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+
+	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+	if (other->takedamage && other->magicType != 5)
+	{
+		if (ent->spawnflags & 1)
+			mod = MOD_HYPERBLASTER;
+		else
+			mod = MOD_BLASTER;
+		T_Damage (other, ent, ent->owner, ent->velocity, ent->s.origin, plane->normal, ent->dmg, 1, DAMAGE_ENERGY, MOD_R_SPLASH);
+	}
+	if (other->magicType == 5)
+	{
+		AngleVectors (ent->owner->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->owner->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->owner->client, ent->owner->s.origin, offset, forward, right, start);
+
+		Magic_Combo_Fire (ent->owner, start, forward,500, 200);
+	}
+	else
+	{	
+		gi.WriteByte (svc_temp_entity);
+		if (ent->waterlevel)
+			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+		else
+			gi.WriteByte (TE_ROCKET_EXPLOSION);
+		gi.WritePosition (origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
+		
+	}
+
+	G_FreeEdict (ent);
+}
+void Magic_Grab_S_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	vec3_t		p_throw;
+	vec3_t		dir, point;
+	vec3_t		forward, right;
+	vec3_t		start;
+	vec3_t		offset;
+
+	vec3_t		origin;
+	int			mod;
+
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+	if(deathmatch)
+	{
+		if ((other != ent->owner) && !plane)
+		{
+			AngleVectors (other->client->v_angle, forward, right, NULL);
+			VectorSet(offset, 24, 8, ent->viewheight-8);
+			VectorAdd (offset, vec3_origin, offset);
+			P_ProjectSource (other->client, other->s.origin, offset, forward, right, start);
+		
+			VectorScale (ent->owner->velocity,1000,p_throw);  
+			VectorCopy (p_throw, other->velocity);
+		}
+	}
+	else
+	{
+		VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+		if (other->takedamage)
+		{
+			if (ent->spawnflags & 1)
+				mod = MOD_HYPERBLASTER;
+			else
+				mod = MOD_BLASTER;
+			T_Damage (other, ent, ent->owner, ent->velocity, ent->s.origin, plane->normal, ent->dmg, 10, DAMAGE_ENERGY, mod);
+			gi.WriteByte (svc_temp_entity);
+		}
+	}
+	if (other->magicType == 5)
+	{
+		AngleVectors (ent->owner->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->owner->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->owner->client, ent->owner->s.origin, offset, forward, right, start);
+
+		Magic_Combo_Grab (ent->owner, start, forward, 500);
+	}
+	else
+	{	
+
+		gi.WriteByte (svc_temp_entity);
+		if (ent->waterlevel)
+			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+		else
+			 gi.WriteByte (TE_ROCKET_EXPLOSION);
+		gi.WritePosition (origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
+
+	}
+	G_FreeEdict(ent);
+}
+void Magic_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	vec3_t		forward, right;
+	vec3_t		start;
+	vec3_t		offset;
+	vec3_t		origin;
+
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+
+	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+	if (other->takedamage)
+	{
+		other->health += 30;
+	}
+	
+	if (other->magicType == 5)
+	{
+		AngleVectors (ent->owner->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->owner->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->owner->client, ent->owner->s.origin, offset, forward, right, start);
+
+		Magic_Combo_Heal (ent->owner, start, forward, 500);
+	}
+	else
+	{	
+
+		gi.WriteByte (svc_temp_entity);
+		if (ent->waterlevel)
+			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+		else
+			 gi.WriteByte (TE_ROCKET_EXPLOSION);
+		gi.WritePosition (origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
+
+	}
+
+	G_FreeEdict (ent);
+}
+void Magic_Radial_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	vec3_t		forward, right;
+	vec3_t		start;
+	vec3_t		offset;
+	vec3_t		origin;
+	int			n;
+
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+
+	// calculate position for the explosion entity
+	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+
+	
+		// don't throw any debris in net games
+	if (!deathmatch->value && !coop->value)
+	{
+		if ((surf) && !(surf->flags & (SURF_WARP|SURF_TRANS33|SURF_TRANS66|SURF_FLOWING)))
+		{
+			n = rand() % 5;
+			while(n--)
+				ThrowDebris (ent, "models/objects/debris2/tris.md2", 2, ent->s.origin);
+		}
+	}
+	
+	if (other->magicType == 5)
+	{
+		AngleVectors (ent->owner->client->v_angle, forward, right, NULL);
+		VectorSet(offset, 24, 8, ent->owner->viewheight-8);
+		VectorAdd (offset, vec3_origin, offset);
+		P_ProjectSource (ent->owner->client, ent->owner->s.origin, offset, forward, right, start);
+
+		Magic_Combo_Radial (ent->owner, start, forward, 500,2000,200);
+	}
+	else
+	{	
+		gi.WriteByte (svc_temp_entity);
+		if (ent->waterlevel)
+			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+		else
+			gi.WriteByte (TE_ROCKET_EXPLOSION);
+		gi.WritePosition (origin);
+		gi.multicast (ent->s.origin, MULTICAST_PHS);
+		T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
+	}
+	G_FreeEdict (ent);
+}
+void Magic_MixS_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+{
+	if (other == ent->owner)
+	{
+		return;
+	}
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+
+	
+	G_FreeEdict (ent);
+}
+
+void Combo_Fire_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	vec3_t	origin;
 	int		mod;
 
+	if (other->magicType == 4)
+	{
+		gi.cprintf (ent->owner,PRINT_HIGH,"Can Change Spell\n");
+	}
 	if (other == ent->owner)
 		return;
 
@@ -961,7 +1212,7 @@ void Magic_Fire_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t
 
 	G_FreeEdict (ent);
 }
-void Magic_Grab_S_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+void Combo_Grab_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	vec3_t		p_throw;
 	vec3_t		dir, point;
@@ -992,7 +1243,7 @@ void Magic_Grab_S_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface
 			VectorAdd (offset, vec3_origin, offset);
 			P_ProjectSource (other->client, other->s.origin, offset, forward, right, start);
 		
-			VectorScale (ent->owner->velocity,1000,p_throw);  
+			VectorScale (ent->owner->velocity,3000,p_throw);  
 			VectorCopy (p_throw, other->velocity);
 		}
 		else
@@ -1040,7 +1291,7 @@ void Magic_Grab_S_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface
 
 	G_FreeEdict(ent);
 }
-void Magic_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
+void Combo_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
 	vec3_t	origin;
 	int		mod;
@@ -1060,7 +1311,7 @@ void Magic_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t
 	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
 	if (other->takedamage)
 	{
-		other->health += 10;
+		other->health += 100;
 		gi.WriteByte (svc_temp_entity);
 		if (ent->waterlevel)
 			gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
@@ -1084,13 +1335,99 @@ void Magic_Heal_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t
 
 	G_FreeEdict (ent);
 }
-void Magic_Radial_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
+void Combo_Rad_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
+	vec3_t	origin;
+	int		n;
 
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+
+	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+	if (!deathmatch->value && !coop->value)
+	{
+		if ((surf) && !(surf->flags & (SURF_WARP|SURF_TRANS33|SURF_TRANS66|SURF_FLOWING)))
+		{
+			n = rand() % 5;
+			while(n--)
+				ThrowDebris (ent, "models/objects/debris2/tris.md2", 2, ent->s.origin);
+		}
+	}
+
+	T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
+
+	gi.WriteByte (svc_temp_entity);
+	if (ent->waterlevel)
+		gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+	else
+		gi.WriteByte (TE_ROCKET_EXPLOSION);
+	gi.WritePosition (origin);
+	gi.multicast (ent->s.origin, MULTICAST_PHS);
+	
+	G_FreeEdict (ent);
 }
-void Magic_MixS_Touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
+void Combo_Nuke_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf)
 {
+	vec3_t		origin;
+	int			n;
+
+	if (other == ent->owner)
+		return;
+
+	if (surf && (surf->flags & SURF_SKY))
+	{
+		G_FreeEdict (ent);
+		return;
+	}
+
+	if (ent->owner->client)
+		PlayerNoise(ent->owner, ent->s.origin, PNOISE_IMPACT);
+
+	// calculate position for the explosion entity
+	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
+
+	if (other->takedamage)
+	{
+		T_Damage (other, ent, ent->owner, ent->velocity, ent->s.origin, plane->normal, ent->dmg, 0, 0, MOD_ROCKET);
+	}
+	else
+	{
+		// don't throw any debris in net games
+		if (!deathmatch->value && !coop->value)
+		{
+			if ((surf) && !(surf->flags & (SURF_WARP|SURF_TRANS33|SURF_TRANS66|SURF_FLOWING)))
+			{
+				n = rand() % 5;
+				while(n--)
+					ThrowDebris (ent, "models/objects/debris2/tris.md2", 2, ent->s.origin);
+			}
+		}
+	}
+
+	T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_R_SPLASH);
+
+	gi.WriteByte (svc_temp_entity);
+	if (ent->waterlevel)
+		gi.WriteByte (TE_ROCKET_EXPLOSION_WATER);
+	else
+		gi.WriteByte (TE_ROCKET_EXPLOSION);
+	gi.WritePosition (origin);
+	gi.multicast (ent->s.origin, MULTICAST_PHS);
+
+	G_FreeEdict (ent);
 }
+
+
+
 void Magic_Slow_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
 	edict_t	*slowFire;
@@ -1133,7 +1470,7 @@ void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowGrab->clipmask = MASK_SHOT;
 	slowGrab->solid = SOLID_BBOX;
 	slowGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowGrab->mins);
+		VectorClear (slowGrab->mins);
 	VectorClear (slowGrab->maxs);
 	slowGrab->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
 	slowGrab->owner = self;
@@ -1141,7 +1478,7 @@ void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowGrab->nextthink = level.time + 8000/speed;
 	slowGrab->think = G_FreeEdict;
 	slowGrab->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowGrab->magicType = 1;
+	slowGrab->magicType = 2;
 
 	if (self->client)
 		check_dodge (self, slowGrab->s.origin, dir, speed);
@@ -1170,7 +1507,7 @@ void Magic_Slow_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowHeal->think = G_FreeEdict;
 
 	slowHeal->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowHeal->magicType = 1;
+	slowHeal->magicType = 3;
 
 	if (self->client)
 		check_dodge (self, slowHeal->s.origin, dir, speed);
@@ -1200,7 +1537,7 @@ void Magic_Slow_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int 
 	slowRadial->dmg_radius = damage_radius;
 	slowRadial->radius_dmg = radius_damage; 
 	slowRadial->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowRadial->magicType = 1;
+	slowRadial->magicType = 4;
 
 	if (self->client)
 		check_dodge (self, slowRadial->s.origin, dir, speed);
@@ -1214,22 +1551,24 @@ void Magic_Slow_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowMix = G_Spawn();
 	VectorCopy (start, slowMix->s.origin);
 	VectorCopy (dir, slowMix->movedir);
+	VectorSet(slowMix->mins, -20, -20, -20);
+	VectorSet(slowMix->maxs, 20, 20, 20);
 	vectoangles (dir, slowMix->s.angles);
 	VectorScale (dir, speed, slowMix->velocity);
 	slowMix->movetype = MOVETYPE_FLYMISSILE;
 	slowMix->clipmask = MASK_SHOT;
 	slowMix->solid = SOLID_BBOX;
+	slowMix->takedamage = DAMAGE_YES;
 	slowMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowMix->mins);
-	VectorClear (slowMix->maxs);
+	//VectorClear (slowMix->mins);
+	//VectorClear (slowMix->maxs);
 	slowMix->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
 	slowMix->owner = self;
 	slowMix->touch = Magic_MixS_Touch;
 	slowMix->nextthink = level.time + 8000/speed;
 	slowMix->think = G_FreeEdict;
-	slowMix->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowMix->magicType = 1;
-
+	//slowMix->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	slowMix->magicType = 5;
 	if (self->client)
 		check_dodge (self, slowMix->s.origin, dir, speed);
 
@@ -1244,6 +1583,7 @@ void Magic_Fast_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int da
 	VectorCopy (dir, slowFire->movedir);
 	vectoangles (dir, slowFire->s.angles);
 	VectorScale (dir, speed, slowFire->velocity);
+	
 	slowFire->movetype = MOVETYPE_FLYMISSILE;
 	slowFire->clipmask = MASK_SHOT;
 	slowFire->solid = SOLID_BBOX;
@@ -1257,7 +1597,7 @@ void Magic_Fast_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int da
 	slowFire->think = G_FreeEdict;
 	slowFire->dmg = damage;
 	slowFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowFire->magicType = 1; //basic lvl1 spell
+	slowFire->magicType = 5; //basic lvl1 spell
 
 	if (self->client)
 		check_dodge (self, slowFire->s.origin, dir, speed);
@@ -1285,7 +1625,7 @@ void Magic_Fast_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowGrab->nextthink = level.time + 8000/speed;
 	slowGrab->think = G_FreeEdict;
 	slowGrab->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowGrab->magicType = 1;
+	slowGrab->magicType = 6;
 
 	if (self->client)
 		check_dodge (self, slowGrab->s.origin, dir, speed);
@@ -1314,7 +1654,7 @@ void Magic_Fast_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowHeal->think = G_FreeEdict;
 
 	slowHeal->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowHeal->magicType = 1;
+	slowHeal->magicType = 7;
 
 	if (self->client)
 		check_dodge (self, slowHeal->s.origin, dir, speed);
@@ -1323,206 +1663,212 @@ void Magic_Fast_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 }
 void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius, int radius_damage)
 {
-	edict_t	*slowRadial;
+	edict_t	*fastRadial;
 
-	slowRadial = G_Spawn();
-	VectorCopy (start, slowRadial->s.origin);
-	VectorCopy (dir, slowRadial->movedir);
-	vectoangles (dir, slowRadial->s.angles);
-	VectorScale (dir, speed, slowRadial->velocity);
-	slowRadial->movetype = MOVETYPE_FLYMISSILE;
-	slowRadial->clipmask = MASK_SHOT;
-	slowRadial->solid = SOLID_BBOX;
-	slowRadial->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowRadial->mins);
-	VectorClear (slowRadial->maxs);
-	slowRadial->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowRadial->owner = self;
-	slowRadial->touch = Magic_Radial_Touch;
-	slowRadial->nextthink = level.time + 8000/speed;
-	slowRadial->think = G_FreeEdict;
-	slowRadial->dmg_radius = damage_radius;
-	slowRadial->radius_dmg = radius_damage; 
-	slowRadial->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowRadial->magicType = 1;
+	fastRadial = G_Spawn();
+	VectorCopy (start, fastRadial->s.origin);
+	VectorCopy (dir, fastRadial->movedir);
+	vectoangles (dir, fastRadial->s.angles);
+	VectorScale (dir, speed, fastRadial->velocity);
+	fastRadial->movetype = MOVETYPE_FLYMISSILE;
+	fastRadial->clipmask = MASK_SHOT;
+	fastRadial->solid = SOLID_BBOX;
+	fastRadial->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (fastRadial->mins);
+	VectorClear (fastRadial->maxs);
+	fastRadial->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	fastRadial->owner = self;
+	fastRadial->touch = Magic_Radial_Touch;
+	fastRadial->nextthink = level.time + 8000/speed;
+	fastRadial->think = G_FreeEdict;
+	fastRadial->dmg_radius = damage_radius;
+	fastRadial->radius_dmg = radius_damage; 
+	fastRadial->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	fastRadial->magicType = 8;
 
 	if (self->client)
-		check_dodge (self, slowRadial->s.origin, dir, speed);
+		check_dodge (self, fastRadial->s.origin, dir, speed);
 
-	gi.linkentity (slowRadial);
+	gi.linkentity (fastRadial);
 }
 void Magic_Fast_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
-	edict_t	*slowMix;
+	edict_t	*fastMix;
 
-	slowMix = G_Spawn();
-	VectorCopy (start, slowMix->s.origin);
-	VectorCopy (dir, slowMix->movedir);
-	vectoangles (dir, slowMix->s.angles);
-	VectorScale (dir, speed, slowMix->velocity);
-	slowMix->movetype = MOVETYPE_FLYMISSILE;
-	slowMix->clipmask = MASK_SHOT;
-	slowMix->solid = SOLID_BBOX;
-	slowMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowMix->mins);
-	VectorClear (slowMix->maxs);
-	slowMix->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowMix->owner = self;
-	slowMix->touch = Magic_MixS_Touch;
-	slowMix->nextthink = level.time + 8000/speed;
-	slowMix->think = G_FreeEdict;
-	slowMix->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowMix->magicType = 1;
+	fastMix = G_Spawn();
+	VectorCopy (start, fastMix->s.origin);
+	VectorCopy (dir, fastMix->movedir);
+	vectoangles (dir, fastMix->s.angles);
+	VectorScale (dir, speed, fastMix->velocity);
+	fastMix->movetype = MOVETYPE_FLYMISSILE;
+	fastMix->clipmask = MASK_SHOT;
+	fastMix->solid = SOLID_BBOX;
+	fastMix->takedamage = DAMAGE_YES;
+	fastMix->mass = 2;
+	//fastMix->monsterinfo.aiflags = AI_NOSTEP;
+	fastMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (fastMix->mins);
+	VectorClear (fastMix->maxs);
+	fastMix->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	fastMix->owner = self;
+	fastMix->touch = Magic_MixS_Touch;
+	fastMix->nextthink = level.time + 8000/speed;
+	fastMix->think = G_FreeEdict;
+	fastMix->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	fastMix->magicType = 9;
 
 	if (self->client)
-		check_dodge (self, slowMix->s.origin, dir, speed);
+		check_dodge (self, fastMix->s.origin, dir, speed);
 
-	gi.linkentity (slowMix);
+	gi.linkentity (fastMix);
 }
+
 void Magic_Combo_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
-	edict_t	*slowFire;
+	edict_t	*comboFire;
 
-	slowFire = G_Spawn();
-	VectorCopy (start, slowFire->s.origin);
-	VectorCopy (dir, slowFire->movedir);
-	vectoangles (dir, slowFire->s.angles);
-	VectorScale (dir, speed, slowFire->velocity);
-	slowFire->movetype = MOVETYPE_FLYMISSILE;
-	slowFire->clipmask = MASK_SHOT;
-	slowFire->solid = SOLID_BBOX;
-	slowFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowFire->mins);
-	VectorClear (slowFire->maxs);
-	slowFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowFire->owner = self;
-	slowFire->touch = Magic_Fire_Touch;
-	slowFire->nextthink = level.time + 8000/speed;
-	slowFire->think = G_FreeEdict;
-	slowFire->dmg = damage;
-	slowFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowFire->magicType = 1; //basic lvl1 spell
+	comboFire = G_Spawn();
+	VectorCopy (start, comboFire->s.origin);
+	VectorCopy (dir, comboFire->movedir);
+	vectoangles (dir, comboFire->s.angles);
+	VectorScale (dir, speed, comboFire->velocity);
+	comboFire->movetype = MOVETYPE_FLYMISSILE;
+	comboFire->clipmask = MASK_SHOT;
+	comboFire->solid = SOLID_BBOX;
+	comboFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (comboFire->mins);
+	VectorClear (comboFire->maxs);
+	comboFire->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
+	comboFire->owner = self;
+	comboFire->touch = Combo_Fire_Touch;
+	comboFire->nextthink = level.time + 8000/speed;
+	comboFire->think = G_FreeEdict;
+	comboFire->dmg = damage;
+	comboFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	comboFire->magicType = 1; //basic lvl1 spell
 
 	if (self->client)
-		check_dodge (self, slowFire->s.origin, dir, speed);
+		check_dodge (self, comboFire->s.origin, dir, speed);
 
-	gi.linkentity (slowFire);
+	gi.linkentity (comboFire);
 }
 void Magic_Combo_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
-	edict_t	*slowGrab;
+	edict_t	*comboGrab;
 
-	slowGrab = G_Spawn();
-	VectorCopy (start, slowGrab->s.origin);
-	VectorCopy (dir, slowGrab->movedir);
-	vectoangles (dir, slowGrab->s.angles);
-	VectorScale (dir, speed, slowGrab->velocity);
-	slowGrab->movetype = MOVETYPE_FLYMISSILE;
-	slowGrab->clipmask = MASK_SHOT;
-	slowGrab->solid = SOLID_BBOX;
-	slowGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowGrab->mins);
-	VectorClear (slowGrab->maxs);
-	slowGrab->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowGrab->owner = self;
-	slowGrab->touch = Magic_Grab_S_Touch;
-	slowGrab->nextthink = level.time + 8000/speed;
-	slowGrab->think = G_FreeEdict;
-	slowGrab->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowGrab->magicType = 1;
+	comboGrab = G_Spawn();
+	VectorCopy (start, comboGrab->s.origin);
+	VectorCopy (dir, comboGrab->movedir);
+	vectoangles (dir, comboGrab->s.angles);
+	VectorScale (dir, speed, comboGrab->velocity);
+	comboGrab->movetype = MOVETYPE_FLYMISSILE;
+	comboGrab->clipmask = MASK_SHOT;
+	comboGrab->solid = SOLID_BBOX;
+	comboGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (comboGrab->mins);
+	VectorClear (comboGrab->maxs);
+	comboGrab->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
+	comboGrab->owner = self;
+	comboGrab->touch = Combo_Grab_Touch;
+	comboGrab->nextthink = level.time + 8000/speed;
+	comboGrab->think = G_FreeEdict;
+	comboGrab->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	comboGrab->magicType = 11;
 
 	if (self->client)
-		check_dodge (self, slowGrab->s.origin, dir, speed);
+		check_dodge (self, comboGrab->s.origin, dir, speed);
 
-	gi.linkentity (slowGrab);
+	gi.linkentity (comboGrab);
 }
 void Magic_Combo_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
-	edict_t	*slowHeal;
+	edict_t	*comboHeal;
 
-	slowHeal = G_Spawn();
-	VectorCopy (start, slowHeal->s.origin);
-	VectorCopy (dir, slowHeal->movedir);
-	vectoangles (dir, slowHeal->s.angles);
-	VectorScale (dir, speed, slowHeal->velocity);
-	slowHeal->movetype = MOVETYPE_FLYMISSILE;
-	slowHeal->clipmask = MASK_SHOT;
-	slowHeal->solid = SOLID_BBOX;
-	slowHeal->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowHeal->mins);
-	VectorClear (slowHeal->maxs);
-	slowHeal->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowHeal->owner = self;
-	slowHeal->touch = Magic_Heal_Touch;
-	slowHeal->nextthink = level.time + 8000/speed;
-	slowHeal->think = G_FreeEdict;
+	comboHeal = G_Spawn(); 
+	VectorCopy (start, comboHeal->s.origin);
+	VectorCopy (dir, comboHeal->movedir);
+	vectoangles (dir, comboHeal->s.angles);
+	VectorScale (dir, speed, comboHeal->velocity);
+	comboHeal->movetype = MOVETYPE_FLYMISSILE;
+	comboHeal->clipmask = MASK_SHOT;
+	comboHeal->solid = SOLID_BBOX;
+	comboHeal->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (comboHeal->mins);
+	VectorClear (comboHeal->maxs);
+	comboHeal->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
+	comboHeal->owner = self;
+	comboHeal->touch = Combo_Heal_Touch;
+	comboHeal->nextthink = level.time + 8000/speed;
+	comboHeal->think = G_FreeEdict;
 
-	slowHeal->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowHeal->magicType = 1;
+	comboHeal->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	comboHeal->magicType = 12;
 
 	if (self->client)
-		check_dodge (self, slowHeal->s.origin, dir, speed);
+		check_dodge (self, comboHeal->s.origin, dir, speed);
 
-	gi.linkentity (slowHeal);
+	gi.linkentity (comboHeal);
 }
 void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage_radius, int radius_damage)
 {
-	edict_t	*slowMix;
+	edict_t	*comboRad;
 
-	slowMix = G_Spawn();
-	VectorCopy (start, slowMix->s.origin);
-	VectorCopy (dir, slowMix->movedir);
-	vectoangles (dir, slowMix->s.angles);
-	VectorScale (dir, speed, slowMix->velocity);
-	slowMix->movetype = MOVETYPE_FLYMISSILE;
-	slowMix->clipmask = MASK_SHOT;
-	slowMix->solid = SOLID_BBOX;
-	slowMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowMix->mins);
-	VectorClear (slowMix->maxs);
-	slowMix->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowMix->owner = self;
-	slowMix->touch = Magic_MixS_Touch;
-	slowMix->nextthink = level.time + 8000/speed;
-	slowMix->think = G_FreeEdict;
-	slowMix->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowMix->magicType = 1;
+	comboRad = G_Spawn();
+	VectorCopy (start, comboRad->s.origin);
+	VectorCopy (dir, comboRad->movedir);
+	vectoangles (dir, comboRad->s.angles);
+	VectorScale (dir, speed, comboRad->velocity);
+	comboRad->movetype = MOVETYPE_FLYMISSILE;
+	comboRad->clipmask = MASK_SHOT;
+	comboRad->solid = SOLID_BBOX;
+	comboRad->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (comboRad->mins);
+	VectorClear (comboRad->maxs);
+	comboRad->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
+	comboRad->owner = self;
+	comboRad->touch = Combo_Rad_Touch;
+	comboRad->nextthink = level.time + 8000/speed;
+	comboRad->think = G_FreeEdict;
+	comboRad->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	comboRad->dmg_radius = damage_radius;
+	comboRad->radius_dmg = radius_damage;
+	comboRad->magicType = 13;
 
 	if (self->client)
-		check_dodge (self, slowMix->s.origin, dir, speed);
+		check_dodge (self, comboRad->s.origin, dir, speed);
 
-	gi.linkentity (slowMix);
+	gi.linkentity (comboRad);
 }
 void Magic_Combo_Nuke (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage, int damage_radius, int radius_damage)
 {
-	edict_t	*slowMix;
+	edict_t	*Nuke;
 
-	slowMix = G_Spawn();
-	VectorCopy (start, slowMix->s.origin);
-	VectorCopy (dir, slowMix->movedir);
-	vectoangles (dir, slowMix->s.angles);
-	VectorScale (dir, speed, slowMix->velocity);
-	slowMix->movetype = MOVETYPE_FLYMISSILE;
-	slowMix->clipmask = MASK_SHOT;
-	slowMix->solid = SOLID_BBOX;
-	slowMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (slowMix->mins);
-	VectorClear (slowMix->maxs);
-	slowMix->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	slowMix->owner = self;
-	slowMix->touch = Magic_MixS_Touch;
-	slowMix->dmg = damage;
-	slowMix->dmg_radius = damage_radius;
-	slowMix->radius_dmg = radius_damage;
-	slowMix->nextthink = level.time + 8000/speed;
-	slowMix->think = G_FreeEdict;
-	slowMix->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	slowMix->magicType = 1;
+	Nuke = G_Spawn();
+	VectorCopy (start, Nuke->s.origin);
+	VectorCopy (dir, Nuke->movedir);
+	vectoangles (dir, Nuke->s.angles);
+	VectorScale (dir, speed, Nuke->velocity);
+	Nuke->movetype = MOVETYPE_FLYMISSILE;
+	Nuke->clipmask = MASK_ALL;
+	Nuke->solid = SOLID_TRIGGER;
+	Nuke->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	VectorClear (Nuke->mins);
+	VectorClear (Nuke->maxs);
+	Nuke->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
+	Nuke->owner = self;
+	Nuke->touch = Combo_Nuke_Touch;
+	Nuke->dmg = damage;
+	Nuke->dmg_radius = damage_radius;
+	Nuke->radius_dmg = radius_damage;
+	Nuke->nextthink = level.time + 8000/speed;
+	Nuke->think = G_FreeEdict;
+	Nuke->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	Nuke->magicType = 14;
 
 	if (self->client)
-		check_dodge (self, slowMix->s.origin, dir, speed);
+		check_dodge (self, Nuke->s.origin, dir, speed);
 
-	gi.linkentity (slowMix);
+	gi.linkentity (Nuke);
 }
 /*
 	End of all of the crazy shoot pickles I'm adding

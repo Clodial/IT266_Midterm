@@ -111,7 +111,7 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 	VectorMA (other->s.origin, 0.5, v, v);
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
-	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 200, 0, mod);
+	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 200, 0, MOD_R_SPLASH);
 /*
 	index = ITEM_INDEX(ent->item);
 
