@@ -1492,32 +1492,31 @@ void Combo_Nuke_Touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t
 
 void Magic_Slow_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int damage)
 {
-	edict_t	*fastFire;
+	edict_t	*slowFire;
 
-	fastFire = G_Spawn();
-	VectorCopy (start, fastFire->s.origin);
-	VectorCopy (dir, fastFire->movedir);
-	vectoangles (dir, fastFire->s.angles);
-	VectorScale (dir, speed, fastFire->velocity);
-	fastFire->movetype = MOVETYPE_FLYMISSILE;
-	fastFire->clipmask = MASK_SHOT;
-	fastFire->solid = SOLID_BBOX;
-	fastFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	VectorClear (fastFire->mins);
-	VectorClear (fastFire->maxs);
-	fastFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
-	fastFire->owner = self;
-	fastFire->touch = Magic_Fire_Touch;
-	fastFire->nextthink = level.time + 8000/speed;
-	fastFire->think = G_FreeEdict;
-	fastFire->dmg = damage;
-	fastFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
-	fastFire->magicType = 1; //basic lvl1 spell
+	slowFire = G_Spawn();
+	VectorCopy (start, slowFire->s.origin);
+	VectorCopy (dir, slowFire->movedir);
+	vectoangles (dir, slowFire->s.angles);
+	VectorScale (dir, speed, slowFire->velocity);
+	slowFire->movetype = MOVETYPE_FLYMISSILE;
+	slowFire->clipmask = MASK_SHOT;
+	slowFire->solid = SOLID_BBOX;
+	VectorClear (slowFire->mins);
+	VectorClear (slowFire->maxs);
+	slowFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	slowFire->owner = self;
+	slowFire->touch = Magic_Fire_Touch;
+	slowFire->nextthink = level.time + 8000/speed;
+	slowFire->think = G_FreeEdict;
+	slowFire->dmg = damage;
+	slowFire->s.sound = gi.soundindex ("weapons/rockfly.wav");
+	slowFire->magicType = 1; //basic lvl1 spell
 
 	if (self->client)
-		check_dodge (self, fastFire->s.origin, dir, speed);
+		check_dodge (self, slowFire->s.origin, dir, speed);
 
-	gi.linkentity (fastFire);
+	gi.linkentity (slowFire);
 }
 void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 {
@@ -1531,8 +1530,7 @@ void Magic_Slow_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowGrab->movetype = MOVETYPE_FLYMISSILE;
 	slowGrab->clipmask = MASK_SHOT;
 	slowGrab->solid = SOLID_BBOX;
-	slowGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-		VectorClear (slowGrab->mins);
+	VectorClear (slowGrab->mins);
 	VectorClear (slowGrab->maxs);
 	slowGrab->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
 	slowGrab->owner = self;
@@ -1559,7 +1557,6 @@ void Magic_Slow_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowHeal->movetype = MOVETYPE_FLYMISSILE;
 	slowHeal->clipmask = MASK_SHOT;
 	slowHeal->solid = SOLID_BBOX;
-	slowHeal->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (slowHeal->mins);
 	VectorClear (slowHeal->maxs);
 	slowHeal->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
@@ -1588,7 +1585,6 @@ void Magic_Slow_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int 
 	slowRadial->movetype = MOVETYPE_FLYMISSILE;
 	slowRadial->clipmask = MASK_SHOT;
 	slowRadial->solid = SOLID_BBOX;
-	slowRadial->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (slowRadial->mins);
 	VectorClear (slowRadial->maxs);
 	slowRadial->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
@@ -1621,9 +1617,6 @@ void Magic_Slow_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	slowMix->clipmask = MASK_SHOT;
 	slowMix->solid = SOLID_BBOX;
 	slowMix->takedamage = DAMAGE_YES;
-	slowMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
-	//VectorClear (slowMix->mins);
-	//VectorClear (slowMix->maxs);
 	slowMix->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
 	slowMix->owner = self;
 	slowMix->touch = Magic_MixS_Touch;
@@ -1649,10 +1642,9 @@ void Magic_Fast_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int da
 	fastFire->movetype = MOVETYPE_FLYMISSILE;
 	fastFire->clipmask = MASK_SHOT;
 	fastFire->solid = SOLID_BBOX;
-	fastFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (fastFire->mins);
 	VectorClear (fastFire->maxs);
-	fastFire->s.modelindex = gi.modelindex ("sprites/s_bfg1.sp2");
+	fastFire->s.modelindex = gi.modelindex ("models/objects/grenade2/tris.md2");
 	fastFire->owner = self;
 	fastFire->touch = Magic_Fire_Touch;
 	fastFire->nextthink = level.time + 8000/speed;
@@ -1678,10 +1670,9 @@ void Magic_Fast_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	fastGrab->movetype = MOVETYPE_FLYMISSILE;
 	fastGrab->clipmask = MASK_SHOT;
 	fastGrab->solid = SOLID_BBOX;
-	fastGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (fastGrab->mins);
 	VectorClear (fastGrab->maxs);
-	fastGrab->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
+	fastGrab->s.modelindex = gi.modelindex ("models/objects/grenade2/tris.md2");
 	fastGrab->owner = self;
 	fastGrab->touch = Magic_Grab_S_Touch;
 	fastGrab->nextthink = level.time + 8000/speed;
@@ -1706,10 +1697,9 @@ void Magic_Fast_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	fastHeal->movetype = MOVETYPE_FLYMISSILE;
 	fastHeal->clipmask = MASK_SHOT;
 	fastHeal->solid = SOLID_BBOX;
-	fastHeal->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (fastHeal->mins);
 	VectorClear (fastHeal->maxs);
-	fastHeal->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
+	fastHeal->s.modelindex = gi.modelindex ("models/objects/grenade2/tris.md2");
 	fastHeal->owner = self;
 	fastHeal->touch = Magic_Heal_Touch;
 	fastHeal->nextthink = level.time + 8000/speed;
@@ -1735,10 +1725,9 @@ void Magic_Fast_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int 
 	fastRadial->movetype = MOVETYPE_FLYMISSILE;
 	fastRadial->clipmask = MASK_SHOT;
 	fastRadial->solid = SOLID_BBOX;
-	fastRadial->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (fastRadial->mins);
 	VectorClear (fastRadial->maxs);
-	fastRadial->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
+	fastRadial->s.modelindex = gi.modelindex ("models/objects/grenade2/tris.md2");
 	fastRadial->owner = self;
 	fastRadial->touch = Magic_Radial_Touch;
 	fastRadial->nextthink = level.time + 8000/speed;
@@ -1767,11 +1756,10 @@ void Magic_Fast_Mix (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	fastMix->solid = SOLID_BBOX;
 	fastMix->takedamage = DAMAGE_YES;
 	fastMix->mass = 2;
-	//fastMix->monsterinfo.aiflags = AI_NOSTEP;
 	fastMix->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (fastMix->mins);
 	VectorClear (fastMix->maxs);
-	fastMix->s.modelindex = gi.modelindex ("models/objects/rocket/tris.md2");
+	fastMix->s.modelindex = gi.modelindex ("models/objects/grenade2/tris.md2");
 	fastMix->owner = self;
 	fastMix->touch = Magic_MixF_Touch;
 	fastMix->nextthink = level.time + 8000/speed;
@@ -1797,7 +1785,6 @@ void Magic_Combo_Fire (edict_t *self, vec3_t start, vec3_t dir, int speed, int d
 	comboFire->movetype = MOVETYPE_FLYMISSILE;
 	comboFire->clipmask = MASK_SHOT;
 	comboFire->solid = SOLID_BBOX;
-	comboFire->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (comboFire->mins);
 	VectorClear (comboFire->maxs);
 	comboFire->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
@@ -1826,7 +1813,6 @@ void Magic_Combo_Grab (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	comboGrab->movetype = MOVETYPE_FLYMISSILE;
 	comboGrab->clipmask = MASK_SHOT;
 	comboGrab->solid = SOLID_BBOX;
-	comboGrab->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (comboGrab->mins);
 	VectorClear (comboGrab->maxs);
 	comboGrab->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
@@ -1854,7 +1840,6 @@ void Magic_Combo_Heal (edict_t *self, vec3_t start, vec3_t dir, int speed)
 	comboHeal->movetype = MOVETYPE_FLYMISSILE;
 	comboHeal->clipmask = MASK_SHOT;
 	comboHeal->solid = SOLID_BBOX;
-	comboHeal->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (comboHeal->mins);
 	VectorClear (comboHeal->maxs);
 	comboHeal->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
@@ -1883,7 +1868,6 @@ void Magic_Combo_Radial (edict_t *self, vec3_t start, vec3_t dir, int speed, int
 	comboRad->movetype = MOVETYPE_FLYMISSILE;
 	comboRad->clipmask = MASK_SHOT;
 	comboRad->solid = SOLID_BBOX;
-	comboRad->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
 	VectorClear (comboRad->mins);
 	VectorClear (comboRad->maxs);
 	comboRad->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
@@ -1913,7 +1897,7 @@ void Magic_Combo_Nuke (edict_t *self, vec3_t start, vec3_t dir, int speed, int d
 	Nuke->movetype = MOVETYPE_FLYMISSILE;
 	Nuke->clipmask = MASK_ALL;
 	Nuke->solid = SOLID_TRIGGER;
-	Nuke->s.effects |= EF_BFG | EF_ANIM_ALLFAST;
+	
 	VectorClear (Nuke->mins);
 	VectorClear (Nuke->maxs);
 	Nuke->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
