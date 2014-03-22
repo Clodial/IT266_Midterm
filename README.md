@@ -1,5 +1,7 @@
 Magic Combination with random extra things mod!!!!
 =============
+To Check Out Code: ALL FINAL CODE IS IN midterm BRANCH
+
 
 To setup:
 
