@@ -106,14 +106,23 @@ In terms of UI stuff, the middle value is a fixed 200 for mana
 If playing campaign, some of the spells differ from their deathmatch counterparts
 
   [1] = 100
+  
   [2] = 5
+  
   [3] = 25
+  
   [4] = 5
+  
   [5] = 10
+  
   [6] = 200 (because this kills everyone when it hits [1])
+  
   [7] = 10
+  
   [8] = 25
+  
   [9] = 10
+  
   [0] = 30
 
 
