@@ -245,16 +245,14 @@ qboolean Pickup_Bandolier (edict_t *ent, edict_t *other)
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
 	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, MOD_R_SPLASH);
-	if(other->mana < other->client->pers.max_mana)
+	
+	if((other->mana) <= (180))
 	{
-		if(other->mana >= (other->client->pers.max_mana - 40))
-		{
-			other->mana = other->client->pers.max_mana;
-		}
-		else
-		{
-			other->mana = other->mana + 40;
-		}
+		other->mana += 20;
+	}
+	else
+	{
+		other->mana = 200;
 	}
 	/*
 	gitem_t	*item;
@@ -309,16 +307,14 @@ qboolean Pickup_Pack (edict_t *ent, edict_t *other)
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
 	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, MOD_R_SPLASH);
-	if(other->mana < other->client->pers.max_mana)
+	
+	if((other->mana) <= (180))
 	{
-		if(other->mana >= (other->client->pers.max_mana - 100))
-		{
-			other->mana = other->client->pers.max_mana;
-		}
-		else
-		{
-			other->mana = other->mana + 100;
-		}
+		other->mana += 20;
+	}
+	else
+	{
+		other->mana = 200;
 	}
 	/*
 	gitem_t	*item;
@@ -559,16 +555,14 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
 	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 2, 0, MOD_R_SPLASH);
-	if(other->mana < other->client->pers.max_mana)
+	
+	if((other->mana) <= (180))
 	{
-		if(other->mana >= (other->client->pers.max_mana - 20))
-		{
-			other->mana = other->client->pers.max_mana;
-		}
-		else
-		{
-			other->mana = other->mana + 20;
-		}
+		other->mana += 20;
+	}
+	else
+	{
+		other->mana = 200;
 	}
 	/*
 	int			oldcount;
@@ -596,7 +590,10 @@ qboolean Pickup_Ammo (edict_t *ent, edict_t *other)
 	*/
 	if (!(ent->spawnflags & (DROPPED_ITEM | DROPPED_PLAYER_ITEM)) && (deathmatch->value))
 		SetRespawn (ent, 30);
-
+	if(!deathmatch)
+	{
+		G_FreeEdict(ent);
+	}
 	return false;
 }
 

@@ -1042,7 +1042,7 @@ void ClientCommand (edict_t *ent)
 	}
 	else if (Q_stricmp (cmd, "MagGrabS") == 0)
 	{
-		if(ent->mana >= 5)
+		if(ent->mana >= 25)
 		{
 			AngleVectors (ent->client->v_angle, forward, right, NULL);
 			VectorSet(offset, 24, 8, ent->viewheight-8);
@@ -1058,7 +1058,7 @@ void ClientCommand (edict_t *ent)
 			gi.WriteByte (MZ_ROCKET | is_silenced);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
 
-			ent->mana -= 5;
+			ent->mana -= 25;
 		}
 		else
 		{
@@ -1091,7 +1091,7 @@ void ClientCommand (edict_t *ent)
 	}
 	else if (Q_stricmp (cmd, "MagRadialS") == 0)
 	{
-		if(ent->mana >= 5)
+		if(ent->mana >= 10)
 		{
 			AngleVectors (ent->client->v_angle, forward, right, NULL);
 			VectorSet(offset, 24, 8, ent->viewheight-8);
@@ -1106,7 +1106,7 @@ void ClientCommand (edict_t *ent)
 			gi.WriteShort (ent-g_edicts);
 			gi.WriteByte (MZ_ROCKET | is_silenced);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
-			ent->mana -= 5;
+			ent->mana -= 10;
 		}
 		else
 		{
@@ -1115,7 +1115,7 @@ void ClientCommand (edict_t *ent)
 	}
 	else if (Q_stricmp (cmd, "MagMixS") == 0)
 	{
-		if(ent->mana >= 5)
+		if(ent->mana >= 100)
 		{
 			AngleVectors (ent->client->v_angle, forward, right, NULL);
 			VectorSet(offset, 24, 16, ent->viewheight-8);
@@ -1130,7 +1130,7 @@ void ClientCommand (edict_t *ent)
 			gi.WriteShort (ent-g_edicts);
 			gi.WriteByte (MZ_ROCKET | is_silenced);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
-			ent->mana -= 5;
+			ent->mana -= 100;
 		}
 		else
 		{
@@ -1139,7 +1139,7 @@ void ClientCommand (edict_t *ent)
 	}
 	else if (Q_stricmp (cmd, "MagMixF") == 0)
 	{
-		if(ent->mana >= 5)
+		if(ent->mana >= 200)
 		{
 			AngleVectors (ent->client->v_angle, forward, right, NULL);
 			VectorSet(offset, 24, 16, ent->viewheight-8);
@@ -1154,7 +1154,7 @@ void ClientCommand (edict_t *ent)
 			gi.WriteShort (ent-g_edicts);
 			gi.WriteByte (MZ_ROCKET | is_silenced);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
-			ent->mana -= 5;
+			ent->mana -= 200;
 		}
 		else
 		{
@@ -1187,7 +1187,7 @@ void ClientCommand (edict_t *ent)
 	}
 	else if (Q_stricmp (cmd, "MagGrabF") == 0)
 	{
-		if(ent->mana >= 10)
+		if(ent->mana >= 25)
 		{
 			AngleVectors (ent->client->v_angle, forward, right, NULL);
 			VectorSet(offset, 24, 16, ent->viewheight-8);
@@ -1202,7 +1202,7 @@ void ClientCommand (edict_t *ent)
 			gi.WriteShort (ent-g_edicts);
 			gi.WriteByte (MZ_ROCKET | is_silenced);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
-			ent->mana -= 10;
+			ent->mana -= 25;
 		}
 		else
 		{
@@ -1211,7 +1211,7 @@ void ClientCommand (edict_t *ent)
 	}
 	else if (Q_stricmp (cmd, "MagHealF") == 0)
 	{
-		if(ent->mana >= 10)
+		if(ent->mana >= 20)
 		{
 			AngleVectors (ent->client->v_angle, forward, right, NULL);
 			VectorSet(offset, 24, 16, ent->viewheight-8);
@@ -1226,7 +1226,7 @@ void ClientCommand (edict_t *ent)
 			gi.WriteShort (ent-g_edicts);
 			gi.WriteByte (MZ_ROCKET | is_silenced);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
-			ent->mana -= 10;
+			ent->mana -= 20;
 		}
 		else
 		{
@@ -1235,7 +1235,7 @@ void ClientCommand (edict_t *ent)
 	}
 	else if (Q_stricmp (cmd, "MagRadF") == 0)
 	{
-		if(ent->mana >= 10)
+		if(ent->mana >= 30)
 		{
 			AngleVectors (ent->client->v_angle, forward, right, NULL);
 			VectorSet(offset, 24, 16, ent->viewheight-8);
@@ -1250,7 +1250,7 @@ void ClientCommand (edict_t *ent)
 			gi.WriteShort (ent-g_edicts);
 			gi.WriteByte (MZ_ROCKET | is_silenced);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
-			ent->mana -= 10;
+			ent->mana -= 30;
 		}
 		else
 		{

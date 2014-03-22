@@ -112,7 +112,16 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 	VectorSubtract (other->s.origin, v, v);
 	points = other->dmg - 0.5 * VectorLength (v);
 	T_Damage (other, other, other, dir, other->s.origin, vec3_origin, 1, 200, 0, MOD_R_SPLASH);
-/*
+	
+	if((other->mana) <= (180))
+	{
+		other->mana += 20;
+	}
+	else
+	{
+		other->mana = 200;
+	}
+	/*
 	index = ITEM_INDEX(ent->item);
 
 	if ( ( ((int)(dmflags->value) & DF_WEAPONS_STAY) || coop->value) 
@@ -828,13 +837,29 @@ BLASTER / HYPERBLASTER
 
 void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, int effect)
 {
+	/*
 	vec3_t  dir;
 	vec3_t	forward, right;
 	vec3_t	start;
 	vec3_t	offset;
+	*/
+	int	i;
+	vec3_t		start;
+	vec3_t		forward, right;
+	vec3_t		angles;
+	int			kick = 2;
+	vec3_t		offset;
 
 	if (is_quad)
 		damage *= 4;
+
+	VectorAdd (ent->client->v_angle, ent->client->kick_angles, angles);
+	AngleVectors (angles, forward, right, NULL);
+	VectorSet(offset, 0, 8, ent->viewheight-8);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	fire_bullet (ent, start, forward, 2000, kick, 1, 1, MOD_MACHINEGUN);
+
+	/*
 	AngleVectors (ent->client->v_angle, forward, right, NULL);
 	VectorSet(offset, 24, 8, ent->viewheight-8);
 	VectorAdd (offset, g_offset, offset);
@@ -844,7 +869,7 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	ent->client->kick_angles[0] = -1;
 
 	fire_rocket (ent, start, forward, 1000, 900, 40, 0);
-
+	*/
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
@@ -872,7 +897,7 @@ void Weapon_Blaster (edict_t *ent)
 	static int	pause_frames[]	= {22, 28, 34, 0};
 	static int	fire_frames[]	= {8, 9, 0};
 
-	Weapon_Generic (ent, 7, 18, 36, 39, pause_frames, fire_frames,  Weapon_Blaster_Fire);
+	Weapon_Generic (ent, 7, 18, 36, 39, pause_frames, fire_frames, Weapon_Blaster_Fire);
 }
 void Weapon_HyperBlaster_Fire (edict_t *ent)
 {

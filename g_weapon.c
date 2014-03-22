@@ -141,11 +141,11 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 		vectoangles (aimdir, dir);
 		AngleVectors (dir, forward, right, up);
 
-		r = crandom()*hspread;
+		r = crandom()*hspread; //Well, I mean, ever sword swing isn't perfect
 		u = crandom()*vspread;
 		VectorMA (start, 8192, forward, end);
-		VectorMA (end, r, right, end);
-		VectorMA (end, u, up, end);
+		VectorMA (start, 35, aimdir, end); //cut the range
+		//VectorMA (end, u, up, end);
 
 		if (gi.pointcontents (start) & MASK_WATER)
 		{
@@ -198,8 +198,8 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 				r = crandom()*hspread*2;
 				u = crandom()*vspread*2;
 				VectorMA (water_start, 8192, forward, end);
-				VectorMA (end, r, right, end);
-				VectorMA (end, u, up, end);
+				VectorMA (start, 25, aimdir, end);
+				//VectorMA (end, u, up, end);
 			}
 
 			// re-trace ignoring water this time
